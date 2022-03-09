@@ -1,10 +1,22 @@
-.vscode/
+################################
+###########  FILES  ############
+################################
+TODO*.*
+*.pptx
 *.pdf
-*.txt
-*.isorted
-!requirements.txt
-!.gitkeep
-*.h5
+
+################################
+########### FOLDERS ############
+################################
+build/
+html/
+.benchmarks/
+reports/
+lectures/
+
+################################
+########### PYTHON #############
+################################
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -110,3 +122,13 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+.mypy_cache*
+
+*.isorted
+
+################################
+########### VS CODE ############
+################################
+.vscode
+*.code-workspace
+.history
