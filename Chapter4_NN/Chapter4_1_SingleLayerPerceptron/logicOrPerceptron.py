@@ -13,7 +13,7 @@ def accuracy_score(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     """ accuracy score """
     N = y_true.shape[0]
     accuracy = np.sum(y_true == y_pred) / N
-    return accuracy
+    return float(accuracy)
 
 
 def step_function(input_signal: np.ndarray) -> np.ndarray:
@@ -54,15 +54,6 @@ class Perceptron:
         """ evaluate """
         y_pred = self.predict(x)
         return accuracy_score(y, y_pred)
-
-    def fit(self, x: np.ndarray, y: np.ndarray) -> None:
-        """ fit """
-        x = np.insert(x, 0, 1, axis=1)
-        while True:
-            y_pred = step_function(np.dot(x, self.weights))
-            if np.all(y_pred == y):
-                break
-            self.weights += self.learning_rate * np.dot(x.T, y - y_pred)
 
 
 if __name__ == '__main__':
