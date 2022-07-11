@@ -1,5 +1,7 @@
 from typing import Tuple
+
 import numpy as np
+
 
 np.random.seed(0)
 
