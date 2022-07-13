@@ -1,5 +1,5 @@
 from typing import Tuple
-
+import tensorflow as tf
 import numpy as np
 from tensorflow.keras.layers import Activation
 from tensorflow.keras.layers import Dense
@@ -41,6 +41,7 @@ def build_model(num_features: int, num_classes: int) -> Sequential:
 
 def main():
     """ Main function. """
+    print(tf.test.is_gpu_available())
     num_features = 784
     num_classes = 10
 
