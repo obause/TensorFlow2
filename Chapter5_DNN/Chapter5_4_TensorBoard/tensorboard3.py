@@ -17,6 +17,8 @@ from tensorflow.keras.models import load_model
 
 from tensorflow.keras.callbacks import TensorBoard
 
+from tf_utils.callbacks import ConfusionMatrix
+
 MODELS_DIR = os.path.join(os.path.curdir, "/models")
 if not os.path.exists(MODELS_DIR):
     os.mkdir(MODELS_DIR)
@@ -25,7 +27,7 @@ print(f"Model directory: {MODELS_DIR}")
 LOGS_DIR = os.path.join(os.path.curdir, "logs")
 if not os.path.exists(LOGS_DIR):
     os.mkdir(LOGS_DIR)
-MODEL_LOG_DIR = os.path.join(LOGS_DIR, "mnist_model1")
+MODEL_LOG_DIR = os.path.join(LOGS_DIR, "mnist_cm")
 print(f"Log directory: {LOGS_DIR}")
 
 
@@ -80,7 +82,7 @@ def build_model(num_features: int, num_classes: int) -> Sequential:
     return model
 
 
-def main():
+def main(epochs, batch_size, learning_rate):
     """ Main function. """
     num_features = 784
     num_classes = 10
@@ -97,7 +99,7 @@ def main():
         num_classes=num_classes
     )
 
-    optimizer = Adam(lr=0.001)
+    optimizer = Adam(lr=learning_rate)
     # optimizer = SGD()
     # optimizer = RMSprop()
 
@@ -113,14 +115,24 @@ def main():
         write_graph=True
     )
 
+    classes_list = [class_idx for class_idx in range(num_classes)]
+
+    cm_callback = ConfusionMatrix(
+        model,
+        x_test,
+        y_test,
+        classes_list=classes_list,
+        log_dir=MODEL_LOG_DIR,
+    )
+
     model.fit(
         x=x_train,
         y=y_train,
-        epochs=50,
-        batch_size=128,
+        epochs=epochs,
+        batch_size=batch_size,
         verbose=1,
         validation_data=(x_test, y_test),
-        callbacks=[tb_callback]
+        callbacks=[tb_callback, cm_callback]
     )
 
     scores = model.evaluate(x_test, y_test)
@@ -128,4 +140,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(epochs=5, batch_size=256, learning_rate=0.001)
