@@ -30,7 +30,7 @@ def main() -> None:
     plt.grid(True)
     plt.plot(x, y, color="blue")
     plt.plot(x, y_act, color="red")
-    #plt.ylim(0.0, 1.0)
+    # plt.ylim(0.0, 1.0)
     plt.show()
 
 
