@@ -15,7 +15,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.python.keras.optimizer_v2.rmsprop import RMSprop
 
-from tf_utils.cifar10DataAdvanced import CIFAR10
+from tf_utils.dogsCatsDataAdvanced import DOGSCATS
 
 
 np.random.seed(0)
@@ -83,7 +83,7 @@ def build_model(
 
 
 if __name__ == "__main__":
-    data = CIFAR10()
+    data = DOGSCATS()
 
     train_dataset = data.get_train_set()
     val_dataset = data.get_val_set()
@@ -93,11 +93,11 @@ if __name__ == "__main__":
     num_classes = data.num_classes
 
     # Global params
-    epochs = 50
-    batch_size = 256
+    epochs = 15
+    batch_size = 128
 
     # Best model params
-    optimizer = RMSprop
+    optimizer = Adam
     learning_rate = 1e-3
     filter_block1 = 32
     kernel_size_block1 = 3

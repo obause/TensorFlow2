@@ -1,10 +1,14 @@
-from typing import Tuple
+# Dataset: https://www.microsoft.com/en-us/download/details.aspx?id=54765
 import os
+import cv2
 
 import numpy as np
 import tensorflow as tf
+
+from typing import Tuple
+from skimage import transform
+
 from sklearn.model_selection import train_test_split
-from tensorflow.keras.datasets import cifar10
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.utils import to_categorical
 
@@ -12,43 +16,65 @@ from tensorflow.keras.utils import to_categorical
 np.random.seed(0)
 tf.random.set_seed(0)
 
-DATA_DIR = os.path.join("C:/Users/Ole/Nextcloud/Uni/Kurse/0Datasets/kagglecatsanddogs_5340/PetImages")
+# DATA_DIR = "C:/Users/Ole/Nextcloud/Uni/Kurse/0Datasets/kagglecatsanddogs_5340/PetImages"
+DATA_DIR = "C:/Users/oleba/Documents/datasets/PetImages"
 X_FILE_PATH = os.path.join(DATA_DIR, "x.npy")
 Y_FILE_PATH = os.path.join(DATA_DIR, "y.npy")
 IMG_SIZE = 64
 IMG_DEPTH = 3
 IMG_SHAPE = (IMG_SIZE, IMG_SIZE, IMG_DEPTH)
 
+
 def extract_cats_dogs() -> None:
     """ Extracts the cats and dogs images from the dataset and saves them as numpy arrays. """
-    cats_dir = os.path.join(DATA_DIR, "Cat")
-    dogs_dir = os.path.join(DATA_DIR, "Dog")
-    
+    cats_dir = os.path.join(DATA_DIR, "Cat").replace("\\","/")
+    dogs_dir = os.path.join(DATA_DIR, "Dog").replace("\\","/")
+
     dirs = [cats_dir, dogs_dir]
     class_names = ["cat", "dog"]
-    
+
     # Falsche Dateien löschen
     for d in dirs:
         for f in os.listdir(d):
             if not f.endswith(".jpg"):
                 print(f"Removing file {f}")
                 os.remove(os.path.join(d, f))
-                
+
     num_cats = len(os.listdir(cats_dir))
     num_dogs = len(os.listdir(dogs_dir))
     num_images = num_cats + num_dogs
-    
+    print(f"Found {num_cats} cats and {num_dogs} dogs.")
     x = np.zeros((num_images, IMG_SIZE, IMG_SIZE, IMG_DEPTH), dtype=np.float32)
     y = np.zeros((num_images,), dtype=np.int32)
-    
+
     count = 0
     for d, class_name in zip(dirs, class_names):
         for f in os.listdir(d):
-            img_filename = os.path.join(d, f)
+            #print(f"Processing file {f}")
+            img_filename = os.path.join(d, f).replace("\\","/")
             try:
-                pass
+                img = cv2.imread(img_filename, cv2.IMREAD_COLOR)
+                img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                x[count] = transform.resize(
+                    image=img,
+                    output_shape=IMG_SHAPE
+                )
+                if class_name == "cat":
+                    y[count] = 0
+                elif class_name == "dog":
+                    y[count] = 1
+                else:
+                    print(f"Unknown class name {class_name}")
+                count += 1
             except Exception as e:
-                pass
+                print(f"Error processing {img_filename}: {e}")
+
+    x = x[:count]
+    y = y[:count]
+
+    np.save(X_FILE_PATH, x)
+    np.save(Y_FILE_PATH, y)
+
 
 def extract_cats_dogs2() -> None:
     x = []
@@ -66,16 +92,19 @@ def extract_cats_dogs2() -> None:
     np.save(X_FILE_PATH, x)
     np.save(Y_FILE_PATH, y)
 
+
 class DOGSCATS:
     def __init__(
-        self, with_normalization: bool = True, validation_size: float = 0.33
+        self, test_size: float = 0.2, validation_size: float = 0.33
     ) -> None:
         # User-definen constants
         self.num_classes = 10
         self.batch_size = 128
         # Load the data set
-        (x_train, y_train), (x_test, y_test) = cifar10.load_data()
+        x = np.load(X_FILE_PATH)
+        y = np.load(Y_FILE_PATH)
         # Split the dataset
+        x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=test_size)
         x_train, x_val, y_train, y_val = train_test_split(
             x_train, y_train, test_size=validation_size
         )
@@ -83,12 +112,6 @@ class DOGSCATS:
         self.x_train = x_train.astype(np.float32)
         self.x_test = x_test.astype(np.float32)
         self.x_val = x_val.astype(np.float32)
-        if with_normalization:
-            self.x_train = self.x_train / 255.0
-        if with_normalization:
-            self.x_train = self.x_train / 255.0
-        if with_normalization:
-            self.x_train = self.x_train / 255.0
         # Preprocess y data
         self.y_train = to_categorical(y_train, num_classes=self.num_classes)
         self.y_test = to_categorical(y_test, num_classes=self.num_classes)
@@ -134,3 +157,9 @@ class DOGSCATS:
         self.x_train = np.concatenate((self.x_train, x_augmented))
         self.y_train = np.concatenate((self.y_train, y_augmented))
         self.train_size = self.x_train.shape[0]
+
+
+if __name__ == "__main__":
+    # extract_cats_dogs()
+
+    data = DOGSCATS()
